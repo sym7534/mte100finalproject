@@ -262,7 +262,7 @@ int getNumPlayers(int max) {
   wait(1,seconds);
 
   // number of players starts at 2
-  int i = 1; // number of players
+  int i = 2;
 
   // runs ui process until return statement
   while (true) {
@@ -288,6 +288,57 @@ int getNumPlayers(int max) {
 
     // ensures # players selected stays within bounds
     if (i > 2 && Brain.buttonLeft.pressing()) {
+      i --; 
+    } else if (i < max && Brain.buttonRight.pressing()) {
+      i ++;
+    }
+
+    // waits until buttons are released before proceeding
+    while (Brain.buttonLeft.pressing() || Brain.buttonRight.pressing()) {}
+
+  }
+}
+
+int getCardsPer(int max) {
+  Brain.Screen.clearScreen(); 
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("Press chk to prcd");
+
+  // waits until the player presses and releases check button
+  while (!Brain.buttonCheck.pressing()) {}
+  while (Brain.buttonCheck.pressing()) {}
+
+  Brain.Screen.clearScreen();
+  
+  wait(1,seconds);
+
+  // cards per player starts at 1
+  int i = 1;
+
+  // runs ui process until return statement
+  while (true) {
+    // prompts the user and displays selected number of players
+    Brain.Screen.setCursor(1,1);
+    Brain.Screen.print("within [1,%d]",max);
+    Brain.Screen.newLine();
+    Brain.Screen.print("%d",i);
+
+    // waits until any button is pressed
+    while(!Brain.buttonLeft.pressing() 
+          && !Brain.buttonRight.pressing() 
+          && !Brain.buttonCheck.pressing()) {}
+
+    Brain.Screen.clearScreen();
+
+    // checks if the checkmark was pressed
+    if (Brain.buttonCheck.pressing()) {
+        // waits until button is released and then returns # players
+      while (Brain.buttonCheck.pressing()) {}
+      return i;
+    }
+
+    // ensures # players selected stays within bounds
+    if (i > 1 && Brain.buttonLeft.pressing()) {
       i --; 
     } else if (i < max && Brain.buttonRight.pressing()) {
       i ++;
@@ -338,9 +389,9 @@ int getCardColor()
 
 // sort cards into 4 suits
 void colorSort() {
-  const double piles = 4;
+  const int piles = 5;
   // int cardsPerPile[4] = { 0, 0, 0, 0 };
-  int cardsPerPile[5] = {0, 0, 0, 0, 0};
+  int cardsPerPile[piles] = {0, 0, 0, 0, 0};
 
   Brain.Screen.clearScreen();
   Brain.Screen.setCursor(1, 1);
@@ -388,7 +439,7 @@ void colorSort() {
     Brain.Screen.print("pile %d has %d cards", i, cardsPerPile[i]);
   }
   Brain.Screen.setCursor(6, 1);
-  Brain.Screen.print("missing: %d", cardsPerPile[5]);
+  Brain.Screen.print("missing: %d", cardsPerPile[4]);
 }
 
 // ---------------------- main: random shuffle dealing ----------------------
@@ -396,7 +447,7 @@ int main() {
   vexcodeInit();
   configureAllSensors();
   
-  srand(Brain.Timer.time(msec))
+  srand(Brain.Timer.time(msec));
 
   int mode = selectMode();
 
@@ -415,10 +466,18 @@ int main() {
   wait(1,seconds);
 
   int players = getNumPlayers(10);
-
+  Brain.Screen.clearScreen();
   Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("%d players", players);
 
-  Brain.Screen.print("%d",players);
+  wait(1, seconds);
+
+  int cardsPer = getCardsPer(52);
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("%d cards per", cardsPer);
 
   
+
+  shuffleDeal(4, 10);
 }
